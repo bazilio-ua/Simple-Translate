@@ -22,7 +22,7 @@ else {  //Chrome
 /**** wrapper (end) ****/
 
 var sourceLanguage, autoDetectedLang = 'en';
-const LANGS = ["az","eu","be","bn","bg","ceb","et","tl","gl","ka","gu","ha","iw","hmn","ig","ga","jw","kn","km","lo","lt","ms","mt","mi","mr","mn","ne","fa","pa","sl","so","te","uk","ur","yi","yo","zu"];
+const LANGS = ["az","eu","be","bn","bg","ceb","et","tl","gl","ka","gu","ha","iw","hmn","ig","ga","jw","kn","km","lo","lt","ms","mt","mi","mr","mn","ne","fa","pa","sl","so","te","uk","ur","yi","yo","zu","si","st"];
 
 // Initialization
 if (!storage.read("from")) storage.write("from", "auto");
@@ -261,13 +261,17 @@ function getTranslation(word) {
   word = word.trim();
   word = word.toLowerCase();
   word = encodeURIComponent(word);
-
+  
+  var gRand = function () {
+    return Math.floor(Math.random() * 1000000) + '|' + Math.floor(Math.random() * 1000000)
+  };
+  
   // urls for old engine
   var url_old_1 = m(1) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&sc=2&ie=UTF-8&oe=UTF-8&uptl=' + storage.read("to") + '&alttl=en&oc=3&otf=2&ssel=0&tsel=0&q=' + word;
   var url_old_2 = m(1) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&sc=2&ie=UTF-8&oe=UTF-8&uptl=' + storage.read("alt") + '&alttl=en&oc=3&otf=2&ssel=0&tsel=0&q=' + word;
   // urls for new engine
-  var url_new_1 = m(6) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&q=' + word;
-  var url_new_2 = m(6) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&q=' + word;
+  var url_new_1 = m(6) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + gRand() + '&q=' + word;
+  var url_new_2 = m(6) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + gRand() + '&q=' + word;
   // ajax request
   var d = new Deferred();
   parallel([get(url_new_1), get(url_new_2)]).then(function (results) {

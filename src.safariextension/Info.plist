@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Mike Avilov</string>
 	<key>Builder Version</key>
-	<string>9537.78.2</string>
+	<string>11601.5.17.1</string>
 	<key>CFBundleDisplayName</key>
 	<string>igTranslator for Google</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.3.0</string>
+	<string>0.3.1</string>
 	<key>CFBundleVersion</key>
 	<string>2</string>
 	<key>Chrome</key>
@@ -65,6 +65,8 @@
 	</dict>
 	<key>Description</key>
 	<string>a handy multi-language translator built on top of Google Translate</string>
+	<key>DeveloperIdentifier</key>
+	<string>K33J7AD8C7</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>
