@@ -48,6 +48,40 @@ function parallel (arr) {
   return d.promise;
 }
 
+function calcToken(a) { /* hashing algorithm to generate token, input is any string */
+  function reducedLevel(a, b) {
+    for (var c = 0; c < b.length - 2; c += 3) {
+      var d = b.charAt(c + 2);
+      d = d >= 'a' ? d.charCodeAt(0) - 87 : Number(d);
+      d = b.charAt(c + 1) == '+' ? a >>> d : a << d;
+      a = b.charAt(c) == '+' ? a + d & 4294967295 : a ^ d;
+    }
+    return a;
+  }
+  /*  */
+  var b = parseInt((new Date()).getTime() / 1000 / 3600);
+  for (var d = [], e = 0, f = 0; f < a.length; f++) {
+    var g = a.charCodeAt(f);
+    /* if-then */
+    128 > g ?
+      d[e++] = g :
+        (2048 > g ?
+          d[e++] = g >> 6 | 192 :
+            (55296 == (g & 64512) && f + 1 < a.length && 56320 == (a.charCodeAt(f + 1) & 64512) ?
+              (g = 65536 + ((g & 1023) << 10) + (a.charCodeAt(++f) & 1023), d[e++] = g >> 18 | 240, d[e++] = g >> 12 & 63 | 128) :
+                d[e++] = g >> 12 | 224, d[e++] = g >> 6 & 63 | 128), d[e++] = g & 63 | 128
+        );
+  }
+  /*  */
+  a = b;
+  d.forEach(function(di) {a = reducedLevel(a + di, '+-a^+6')});
+  a = reducedLevel(a, "+-3^+b+-f");
+  a = a >= 0 ? a : ((a & 2147483647) + 2147483648);
+  a %= Math.pow(10, 6);
+  var token = a.toString() + '.' + (a ^ b);
+  return token;
+}
+
 function m (i) {
   var arr = [
     "ossw=((fcc7i)dhj(`hh`kb*sufitkfshu)osjk8qbutnhi:",
@@ -122,7 +156,7 @@ function newTranslationEngine(inputWord, ajaxResults) {
       var arr = [];
       try {
         arr = JSON.parse(result_simplified);
-      } 
+      }
       catch(e) {}
       if (arr) {
         var sourceLang = '', src1 = '', src2 = '';
@@ -138,17 +172,22 @@ function newTranslationEngine(inputWord, ajaxResults) {
           if (result_simplified) {
             try {
               arr = JSON.parse(result_simplified);
-            } 
+            }
             catch(e) {}
           }
         }
         if (arr) {
           if (arr[0]) {
             obj.definition = '';
-            obj.word = decodeURIComponent(inputWord);
+            // obj.word = decodeURIComponent(inputWord);
+            obj.word = decodeURIComponent(decodeURIComponent(inputWord));
             for (var i = 0; i < arr[0].length; i++) {
               if (arr[0][i][0] && arr[0][i][1]) {
-                obj.definition += arr[0][i][0];
+                // obj.definition += arr[0][i][0];
+                var sentence = arr[0][i][0];
+                /* remove extra spaces */
+                sentence = sentence.replace(/ +\, +/g, ', ').replace(/ +\u060c +/g, '\u060c ').replace(/ +\. +/g, '. ');
+                obj.definition += sentence;
                 obj.error = false;
               }
             }
@@ -219,16 +258,16 @@ function oldTranslationEngine(inputWord, ajaxResults) { /* Note: (&oc=3&otf=2) i
   var obj = {}, definition = '', wordIsCorrect = false, correctedWord = '', detailDefinition = [], sourceLang = '', error = true;
   try {
     obj = JSON.parse(ajaxResults[0]);
-  } 
+  }
   catch(e) {}
   if (obj.src) {
-    sourceLang = obj.src; 
+    sourceLang = obj.src;
     autoDetectedLang = obj.src;
   }
   if (sourceLang == storage.read("to")) {
     try {
       obj = JSON.parse(ajaxResults[1]);
-    } 
+    }
     catch(e) {}
   }
   // check to see if the input Word is correct with 3 conditions
@@ -260,18 +299,25 @@ function oldTranslationEngine(inputWord, ajaxResults) { /* Note: (&oc=3&otf=2) i
 function getTranslation(word) {
   word = word.trim();
   word = word.toLowerCase();
+  // word = encodeURIComponent(word);
+  word = word.replace(/\%/g, '');
   word = encodeURIComponent(word);
-  
-  var gRand = function () {
-    return Math.floor(Math.random() * 1000000) + '|' + Math.floor(Math.random() * 1000000)
-  };
-  
+
+  // var gRand = function () {
+  //   return Math.floor(Math.random() * 1000000) + '|' + Math.floor(Math.random() * 1000000)
+  // };
+
   // urls for old engine
-  var url_old_1 = m(1) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&sc=2&ie=UTF-8&oe=UTF-8&uptl=' + storage.read("to") + '&alttl=en&oc=3&otf=2&ssel=0&tsel=0&q=' + word;
-  var url_old_2 = m(1) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&sc=2&ie=UTF-8&oe=UTF-8&uptl=' + storage.read("alt") + '&alttl=en&oc=3&otf=2&ssel=0&tsel=0&q=' + word;
+  // var url_old_1 = m(1) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&sc=2&ie=UTF-8&oe=UTF-8&uptl=' + storage.read("to") + '&alttl=en&oc=3&otf=2&ssel=0&tsel=0&q=' + word;
+  // var url_old_2 = m(1) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&sc=2&ie=UTF-8&oe=UTF-8&uptl=' + storage.read("alt") + '&alttl=en&oc=3&otf=2&ssel=0&tsel=0&q=' + word;
   // urls for new engine
-  var url_new_1 = m(6) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + gRand() + '&q=' + word;
-  var url_new_2 = m(6) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + gRand() + '&q=' + word;
+  // var url_new_1 = m(6) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + gRand() + '&q=' + word;
+  // var url_new_2 = m(6) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qc&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + gRand() + '&q=' + word;
+
+  var token = function () {return calcToken(decodeURIComponent(word))};
+  var url_new_1 = m(6) + storage.read("from") + '&tl=' + storage.read("to") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + token() + '&q=' + word;
+  var url_new_2 = m(6) + storage.read("from") + '&tl=' + storage.read("alt") + '&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&dt=sw&ie=UTF-8&oe=UTF-8&ssel=0&tsel=0&tk=' + token() + '&q=' + word;
+
   // ajax request
   var d = new Deferred();
   parallel([get(url_new_1), get(url_new_2)]).then(function (results) {
@@ -286,7 +332,7 @@ function getTranslation(word) {
       });
     }
     d.resolve(obj);
-  }, function (e) {    
+  }, function (e) {
     d.resolve({
       word: '',
       definition: '',
@@ -381,7 +427,8 @@ var bookmark = {
           action == "a" ? {q: question, utrans: answer} : {id: id}
         ).then (
           function (content) {
-            var key = /\"([^\"]*)\"\]/.exec(content);
+            // var key = /\"([^\"]*)\"\]/.exec(content);
+            var key = /\"([^\"]*)\"/.exec(content)[1]; /* bug: 4-28-2015 */
             if (key && key.length) {
               d.resolve(key[1]);
             }
