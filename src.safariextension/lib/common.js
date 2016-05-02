@@ -392,14 +392,78 @@ function openPage(obj) {
 popup.receive("open-page", openPage);
 content_script.receive("open-page", openPage);
 
-function playVoice(data) {
-  // Content script does not return lang
-  data.lang = data.lang || storage.read("from");
-  data.lang = (data.lang == 'auto' ? autoDetectedLang : data.lang);
+// function playVoice(data) {
+//   // Content script does not return lang
+//   data.lang = data.lang || storage.read("from");
+//   data.lang = (data.lang == 'auto' ? autoDetectedLang : data.lang);
+//
+//   function token(str) {
+//       return calcToken(decodeURIComponent(str));
+//   };
+//
+//   // var url = m(3) + data.word + '&tl=' + data.lang + '&total=1&textlen=' + data.word.length + '&client=t';
+//   var url = m(3) + data.word + '&tl=' + data.lang + '&total=1&textlen=' + data.word.length + '&tk=' + token(data.word) + '&client=t';
+//   play(url);
+// }
 
-  var url = m(3) + data.word + '&tl=' + data.lang + '&total=1&textlen=' + data.word.length + '&client=t';
-  play(url);
+function playVoice(data) {
+  function splitString(str, n) {
+    var words = str.split(/\s+/g), result = [], tmp = [], count = 0;
+    for (var i = 0; i < words.length; i++) {
+      tmp.push(words[i]); count++;
+      if (count == n || i == words.length - 1) {
+        result.push(tmp.join(" "));
+        tmp = [], count = 0; /* reset */
+      }
+    }
+    return result;
+  }
+  function token(str) {
+    return calcToken(decodeURIComponent(str));
+  };
+  /* Content script does not return lang */
+  var lang = data.lang || storage.read("from");
+  lang = (lang == 'auto' ? autoDetectedLang : lang);
+  var text = data.word || '', audioUrl = [];
+  /*  */
+  // if (false) { //if (globalToken) {
+  //   var url = m(3) + text + "&tl=" + lang + "&total=1&textlen=" + text.length + "&tk=" + globalToken + "&client=t";
+  //   app.play(url, function (msg) {
+  //     if (msg === 'error') {
+  //       app.notification("Google Translator", "Text-to-Speech Error: The sentence is Too long, or there was a Text-to-Speech internal API bug.");
+  //     }
+  //   });
+  // }
+  // else {
+    /* split sentence into smaller pieces with n words */
+    text = text.replace(/\'/g, '').replace(/\"/g, '').split(/\.|\,|\;|\u060c|\?|\!|\:/g);
+    for (var i = 0; i < text.length; i++) {
+      var subtext = splitString(text[i], 13); /* 13 words max */
+      for (var j = 0; j < subtext.length; j++) {
+        // if (subtext[j].length) audioUrl.push(m(3) + subtext[j] + "&tl=" + lang + "&total=1&textlen=" + subtext[j].length + "&tk=" + (globalToken || token(subtext[j])) + "&client=t");
+        if (subtext[j].length) audioUrl.push(m(3) + subtext[j] + "&tl=" + lang + "&total=1&textlen=" + subtext[j].length + "&tk=" + token(subtext[j]) + "&client=t");
+      }
+    }
+    var k = 0;
+    function playRecursion() {
+      if (audioUrl[k]) {
+        // app.play(audioUrl[k], function (flag) {
+        //   if (flag !== 'error') {
+        //     k++; if (k < audioUrl.length) playRecursion();
+        //   }
+        // });
+        play(audioUrl[k], function (flag) {
+          if (flag !== 'error') {
+            k++; if (k < audioUrl.length) playRecursion();
+          }
+        });
+
+      }
+    }
+    playRecursion();
+  // }
 }
+
 popup.receive("play-voice", playVoice);
 popup.receive("check-voice-request", function () {
   popup.send(

@@ -68,27 +68,54 @@ var _safari = {
     alert(text);
   },
 
-  play: (function () {
+  // play: function (url, callback) {
+  //     function ended() {
+  //         audio.removeEventListener("ended", ended);
+  //         callback(true);
+  //     }
+  //     var audio = new Audio();
+  //     audio.addEventListener("ended", ended);
+  //     var canPlay = audio.canPlayType("audio/mpeg");
+  //     if (!canPlay) {
+  //         audio = document.createElement("iframe");
+  //         document.body.appendChild(audio);
+  //     }
+  //     if (canPlay) {
+  //       audio.setAttribute("src", url);
+  //       audio.play();
+  //     }
+  //     else {
+  //       audio.removeAttribute('src');
+  //       audio.setAttribute('src', url);
+  //     }
+  // },
+
+  play: function (url, callback) {
     var canPlay = false;
+    var win = safari.extension.toolbarItems[0].popover.contentWindow;
     try {
-      var audio = new Audio();
+      var audio = new win.Audio(); /* use popup window-content to play audio */
+      function ended() {
+        audio.removeEventListener("ended", ended);
+        callback(true);
+      }
+      audio.addEventListener("ended", ended);
       canPlay = audio.canPlayType("audio/mpeg");
-    } catch (e) {}
+    }
+    catch (e) {}
     if (!canPlay) {
       audio = document.createElement("iframe");
       document.body.appendChild(audio);
     }
-    return function (url) {
-      if (canPlay) {
-        audio.setAttribute("src", url);
-        audio.play();
-      }
-      else {
-        audio.removeAttribute('src');
-        audio.setAttribute('src', url);
-      }
+    if (canPlay) {
+      audio.setAttribute("src", url);
+      audio.play();
     }
-  })(),
+    else {
+      audio.removeAttribute('src');
+      audio.setAttribute('src', url);
+    }
+  },
 
   version: function () {
     return safari.extension.displayVersion;
