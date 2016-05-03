@@ -92,7 +92,8 @@ var _safari = {
 
   play: function (url, callback) {
     var canPlay = false;
-    var win = safari.extension.toolbarItems[0].popover.contentWindow;
+    // var win = safari.extension.toolbarItems[0].popover.contentWindow;
+    var win = safari.extension.popovers[0].contentWindow;
     try {
       var audio = new win.Audio(); /* use popup window-content to play audio */
       function ended() {
